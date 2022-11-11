@@ -15,7 +15,67 @@ CreateConVar("mcitem_manualpickup", "0", FCVAR_REPLICATED, "If on, the player mu
 CreateConVar("mcitem_autoequip", "0", FCVAR_REPLICATED, "Overrides the way weapon auto-switching works with the items. -1 = no autoswitch, 0 = default (weight-based), 1 = always autoswitch")
 CreateConVar("mcitem_npc_deathdrop", "1", FCVAR_REPLICATED, "NPCs will drop their currently held weapon on death.")
 CreateConVar("mcitem_npc_pickup", "1", FCVAR_REPLICATED, "NPCs will be able to pick up item weapons. If this is set to 2, NPCs will pick up any dropped item, even if the weapon isn't marked as NPC usable. Can be perf-intensive.")
+CreateConVar("mcitem_saveconfig", "1", FCVAR_REPLICATED, "If 1, saves/reads this mod's config to/from garrysmod/data/mcitem_config.json")
 
+function doReadVars()
+    if (file.Exists("mcitem_config.json", "DATA")) then
+        print("Reading Minecraft Weapon Drops config...")
+        local json = file.Read("mcitem_config.json", "DATA")
+        local tb = util.JSONToTable(json)
+        if (tb["mcitem_saveconfig"] ~= "1") then
+            print("mcitem_saveconfig is \"0\", canceling reading.")
+            GetConVar("mcitem_saveconfig"):SetBool(false)
+            return
+        end
+        for k, v in pairs(tb) do
+            GetConVar(k):SetString(v)
+        end
+    end
+end
+
+hook.Add("Initialize", "MCLoad", doReadVars)
+
+local saveVars = {
+    "mcitem_manualdrops",
+    "mcitem_manualdrops_time",
+    "mcitem_deathdrops",
+    "mcitem_deathdrops_ammo",
+    "mcitem_deathdrops_time",
+    "mcitem_deathdrops_exclude",
+    "mcitem_deathdrops_excludesandbox",
+    "mcitem_deathdrops_noadmin",
+    "mcitem_manualpickup", 
+    "mcitem_autoequip",
+    "mcitem_npc_deathdrop",
+    "mcitem_npc_pickup",
+}
+
+function doSaveVars()
+    local saveTable = {}
+    for i, sv in ipairs(saveVars) do
+        local cv = GetConVar(sv)
+        local val = cv:GetString()
+        if (val ~= cv:GetDefault()) then
+            saveTable[sv] = val
+        end
+    end
+    local json = util.TableToJSON(saveTable, true)
+    file.Write("mcitem_config.json", json)
+    print("Saved Minecraft Weapon Drops config.")
+end
+
+
+
+hook.Add("ShutDown", "MCItemSave", function ()
+    if (GetConVar("mcitem_saveconfig"):GetBool()) then
+        doSaveVars()
+    else
+        local tbl = {
+            mcitem_saveconfig = "0"
+        }
+        file.Write("mcitem_config.json", util.TableToJSON(tbl, true))
+    end
+end)
 
 -- weapon_crowbar,weapon_physgun,weapon_physcannon,weapon_pistol,weapon_357,weapon_smg1,weapon_ar2,weapon_shotgun,weapon_crossbow,weapon_frag,weapon_rpg,gmod_camera,gmod_tool
 
