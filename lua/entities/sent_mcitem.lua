@@ -250,6 +250,9 @@ function ENT:PickedMatrix()
     if (!self:GetPicked()) then
         return nil
     end
+    if (!IsValid(self:GetPickedEnt())) then
+        return nil
+    end
     local m = Matrix()
     local frac = (CurTime()-self:GetPickedTime())/pickupTime
     if (frac > 1) then

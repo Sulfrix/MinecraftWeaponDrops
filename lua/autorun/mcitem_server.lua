@@ -10,6 +10,7 @@ CreateConVar("mcitem_deathdrops_ammo", "1", FCVAR_REPLICATED, "Enable deathdrops
 CreateConVar("mcitem_deathdrops_time", "20", FCVAR_REPLICATED, "How long death drops take to disappear.")
 CreateConVar("mcitem_deathdrops_exclude", "", FCVAR_REPLICATED, "Comma-seperated list of weapons that shouldn't be dropped when a player dies. See mcitem_deathdrops_excludesandbox for the Sandbox weapons")
 CreateConVar("mcitem_deathdrops_excludesandbox", "1", FCVAR_REPLICATED, "Shortcut to adding either just the Sandbox tools (1) or all of the Sandbox default weapons (2) to mcitem_deathdrops_exclude")
+CreateConVar("mcitem_deathdrops_activeonly", "0", FCVAR_REPLICATED, "Only the player's active weapon will be dropped on death.")
 CreateConVar("mcitem_deathdrops_noadmin", "1", FCVAR_REPLICATED, "Disables dropping weapons that are admin-only.")
 CreateConVar("mcitem_manualpickup", "0", FCVAR_REPLICATED, "If on, the player must interact with drops to pick them up.")
 CreateConVar("mcitem_autoequip", "0", FCVAR_REPLICATED, "Overrides the way weapon auto-switching works with the items. -1 = no autoswitch, 0 = default (weight-based), 1 = always autoswitch")
@@ -129,6 +130,13 @@ hook.Add("DoPlayerDeath", "MCPlayerDeath", function(ply, ent)
     --PrintTable(ply:GetAmmo())
     local ammo = ply:GetAmmo() -- For each ammo type on the player, each weapon will have an equal cut of its ammo type given to each item.
     local ammoCounts = {}
+    if (GetConVar("mcitem_deathdrops_activeonly"):GetBool()) then
+        if (IsValid(ply:GetActiveWeapon())) then
+            weaps = {ply:GetActiveWeapon()}
+        else
+            weaps = {}
+        end
+    end
     for k, v in ipairs(weaps) do
         if (ammoCounts[v:GetPrimaryAmmoType()] == nil) then
             ammoCounts[v:GetPrimaryAmmoType()] = 1
@@ -141,6 +149,7 @@ hook.Add("DoPlayerDeath", "MCPlayerDeath", function(ply, ent)
             ammoCounts[v:GetSecondaryAmmoType()] = ammoCounts[v:GetSecondaryAmmoType()] + 1
         end
     end
+    
     --PrintTable(ammoCounts)
     for k, v in ipairs(weaps) do
         if (!table.HasValue(exclude, v:GetClass()) and (!v.AdminOnly or !GetConVar("mcitem_deathdrops_noadmin"):GetBool())) then
