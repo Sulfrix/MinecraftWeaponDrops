@@ -23,7 +23,7 @@ function doReadVars()
         print("Reading Minecraft Weapon Drops config...")
         local json = file.Read("mcitem_config.json", "DATA")
         local tb = util.JSONToTable(json)
-        if (tb["mcitem_saveconfig"] ~= "1") then
+        if (tb["mcitem_saveconfig"] ~= "1" and tb["mcitem_saveconfig"] ~= nil) then
             print("mcitem_saveconfig is \"0\", canceling reading.")
             GetConVar("mcitem_saveconfig"):SetBool(false)
             return
@@ -44,6 +44,7 @@ local saveVars = {
     "mcitem_deathdrops_time",
     "mcitem_deathdrops_exclude",
     "mcitem_deathdrops_excludesandbox",
+    "mcitem_deathdrops_activeonly",
     "mcitem_deathdrops_noadmin",
     "mcitem_manualpickup", 
     "mcitem_autoequip",
