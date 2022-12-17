@@ -300,8 +300,8 @@ function ENT:Draw()
 
         if (!self:GetPicked()) then
             local mins, maxs = i:GetModelBounds()
-            if (maxs == nil) then maxs = 0 end
-            if (mins == nil) then mins = 0 end
+            if (maxs == nil) then maxs = Vector() end
+            if (mins == nil) then mins = Vector() end
             local total = maxs - mins
             local target = 32
             local largest = math.max(total.x, total.y, 0)
